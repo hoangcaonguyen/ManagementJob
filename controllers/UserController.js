@@ -2,7 +2,9 @@ import {UserModel}  from "../models/User.js";
 import jwt from "jsonwebtoken";
 import niv from "node-input-validator";
 import CryptoJS from "crypto-js";
-import e from "express";
+"use strict";
+import nodemailer from "nodemailer";
+
 
 function encrypt(text) {
   return CryptoJS.HmacSHA256(text, process.env.encrypt_secret_key).toString(
@@ -210,6 +212,87 @@ export const confirmAccount = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+
+async function sendMail(toMail,subject,content) {
+  // Generate test SMTP service account from ethereal.email
+  // Only needed if you don't have a real mail account for testing
+  
+ 
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport(`smtps://${process.env.EMAIL}:${process.env.PASS}@smtp.gmail.com`);
+
+  let body = content;
+  // send mail with defined transport object
+  let info = await transporter.sendMail({
+    from: '"Khoa đào tạo👻" <khoadaotao@gmail.com>', // sender address
+    to: toMail, // list of receivers
+    subject: subject, // Subject line
+    text: content, // plain text body
+    html: `<p>${body}</p>`, // html body
+  });
+
+  console.log("Message sent: %s", info.messageId);
+  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+  // Preview only available when sending through an Ethereal account
+  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+}
+
+//kdt-delete-account
+export const deleteAccount = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      secret_key: "required",
+      idUser: "required",
+    });
+    const matched = await v.check();
+    if(matched){
+      jwt.verify(
+        req.body.secret_key,
+        process.env.login_secret_key,
+        async (err,decoded) => {
+          if(err){
+            res.status(500).json({ error: err });
+          }
+          if(decoded){
+            console.log(decoded);
+            if(decoded.role == "trainingDepartment"){
+                  let email = await getEmailById(req.body.idUser);
+                  let deleteUser =  await UserModel.deleteOne({"_id":req.body.idUser})
+                  if(deleteUser){
+                    sendMail(email,"Thông báo","Tài khoản bạn vi phạm nội qui của khoa đào tạo nên đã bị xóa");    
+                    res.status(200).json({status:true,result:"Xóa thành công"});   
+                  }else{
+                    res.status(500).json({ error: "Xóa thất bại" });
+                  }             
+            } else {
+                    res.status(500).json({ error: "Không đúng vai trò" });
+                  }           
+            }
+        }
+      )
+    }else{
+      res.status(500).json({ error: v.errors });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+//get email by idUser
+async function getEmailById(id) {
+  try {
+    var user = await UserModel.findOne(
+      {
+        _id: id 
+      },
+      "email"
+    );
+    return user.email;
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
+}
 
 
 

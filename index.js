@@ -4,6 +4,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from './routers/User.js';
+import Task from './routers/Task.js';
 dotenv.config()
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,6 +14,7 @@ app.use(bodyParser.json({limit: "30mb" }));
 app.use(bodyParser.urlencoded({ extended: true , limit: "30mb" }));
 app.use(cors());
 app.use('/user', User);
+app.use('/user/task', Task);
 
 mongoose
     .connect(URI, {useNewUrlParser:true , useUnifiedTopology: true})
