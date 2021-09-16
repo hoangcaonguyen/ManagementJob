@@ -1,0 +1,23 @@
++ cl-post-login
+Sinh viên :
+sv-edit-profile,(post)
+sv-search-job,(get)
+sv-apply-job,(post)
+Nhà tuyển dụng:
+ntd-post-login,(post)
+ntd-post-register,(post)
+ntd-post-forgot-password,(post)
+ntd-edit-record,(post)
+ntd-post-recruitment,(post)
+ntd-post-review-sv,(post)
+ntd-send-notice,(post)
+Khoa đào tạo:
+kdt-create-account-for-sv,(post)
+kdt-confirm-account-ntd,(post)
+kdt-delete-account,(post)
+kdt-get-list-recruitment,(get)
+kdt-get-list-sv-apply,(get)
+kdt-confirm-apply-off-sv,(post)
+kdt-send-list-sv-applied-for-ntd,(post)
+kdt-get-review,(get)
+kdt-get-statistical,(get)
