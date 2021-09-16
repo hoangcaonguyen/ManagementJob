@@ -59,4 +59,13 @@ const schema = new mongoose.Schema({
         default:0
     }
 },{timestamps:true});
+schema.index(
+    {
+        task_owner_first_name : "text",
+        task_owner_last_name : "text",
+        task_title:"text",
+        price : "text",
+        location : "text",
+    }
+);
 export const TaskModel = mongoose.model("Task", schema)

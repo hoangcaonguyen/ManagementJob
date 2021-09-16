@@ -54,4 +54,12 @@ const schema = new mongoose.Schema({
         default:0
     }
 },{timestamps:true});
+schema.index(
+    {
+        first_name : "text",
+        last_name : "text",
+        email : "text",
+        address : "text",
+    }
+);
 export const UserModel = mongoose.model("User", schema)
