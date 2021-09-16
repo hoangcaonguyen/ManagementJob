@@ -512,3 +512,22 @@ export const rateStudent = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+//search
+export const search = async (req, res) => {
+  const {keySearch} = req.body;
+  try {
+       const searchResultTask = await TaskModel.find({
+        $text : {
+            $search :keySearch
+        }
+       },{});
+        const searchResultUser = await UserModel.find({
+        $text : {
+            $search :keySearch
+        }
+       },{});
+      res.status(200).json({success:true,data:{resultTask:searchResultTask,resultUser:searchResultUser}});
+  } catch (e) {
+      console.log(e);
+  }
+};
