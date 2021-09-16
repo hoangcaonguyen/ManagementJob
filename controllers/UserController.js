@@ -1,10 +1,9 @@
-import {UserModel}  from "../models/User.js";
+import { UserModel } from "../models/User.js";
 import jwt from "jsonwebtoken";
 import niv from "node-input-validator";
 import CryptoJS from "crypto-js";
-"use strict";
+("use strict");
 import nodemailer from "nodemailer";
-
 
 function encrypt(text) {
   return CryptoJS.HmacSHA256(text, process.env.encrypt_secret_key).toString(
@@ -14,10 +13,10 @@ function encrypt(text) {
 
 export const getAll = async (req, res) => {
   try {
-      const listUser = await UserModel.find();
-      res.status(200).json(listUser);
+    const listUser = await UserModel.find();
+    res.status(200).json(listUser);
   } catch (e) {
-      console.log(e);
+    console.log(e);
   }
 };
 //user-register
@@ -29,25 +28,25 @@ export const register = async (req, res) => {
       first_name: "required|maxLength:50",
       last_name: "required|maxLength:50",
       role: "required",
-      phonenumber:"required|phoneNumber",
+      phonenumber: "required|phoneNumber",
     });
     const matched = await v.check();
     if (matched) {
       if ((await isEmailExit(req.body.email)) == false) {
         const password_hash = encrypt(req.body.password);
         const user = new UserModel({
-           password:password_hash ,
-           email: req.body.email,
-           first_name: req.body.first_name,
-           last_name: req.body.last_name,
-           role: req.body.role,
-           phonenumber:req.body.phonenumber,
-           gender:req.body.gender, 
-           codeStudent:req.body.codeStudent,
-           day_of_birth:req.body.day_of_birth,
-           month_of_birth: req.body.month_of_birth,
-           year_of_birth:req.body.year_of_birth,
-           address:req.body.address,
+          password: password_hash,
+          email: req.body.email,
+          first_name: req.body.first_name,
+          last_name: req.body.last_name,
+          role: req.body.role,
+          phonenumber: req.body.phonenumber,
+          gender: req.body.gender,
+          codeStudent: req.body.codeStudent,
+          day_of_birth: req.body.day_of_birth,
+          month_of_birth: req.body.month_of_birth,
+          year_of_birth: req.body.year_of_birth,
+          address: req.body.address,
         });
         await user.save(function (err) {
           if (err) {
@@ -94,12 +93,12 @@ async function checkLogin(email, password) {
   console.log(statusUser);
   if (passwordUser != null) {
     if (passwordUser.password == password) {
-        if(statusUser.status == 1){
-            return "success";
-        }else{
-             console.log("sds");
-            return { message: "Tài khoản chưa được khoa đào tạo duyệt" };
-        }   
+      if (statusUser.status == 1) {
+        return "success";
+      } else {
+        console.log("sds");
+        return { message: "Tài khoản chưa được khoa đào tạo duyệt" };
+      }
     } else {
       return { message: "Mật khẩu không chính xác !!" };
     }
@@ -113,7 +112,7 @@ async function getUserID(loginquery) {
   try {
     var id = await UserModel.findOne(
       {
-        email: loginquery 
+        email: loginquery,
       },
       "_id"
     );
@@ -178,34 +177,34 @@ export const confirmAccount = async (req, res) => {
       idCompany: "required",
     });
     const matched = await v.check();
-    if(matched){
+    if (matched) {
       jwt.verify(
         req.body.secret_key,
         process.env.login_secret_key,
-        async (err,decoded) => {
-          if(err){
+        async (err, decoded) => {
+          if (err) {
             res.status(500).json({ error: err });
           }
-          if(decoded){
+          if (decoded) {
             console.log(decoded);
-            if(decoded.role == "trainingDepartment"){
-                    let result = await UserModel.findOneAndUpdate(
-                            { _id: req.body.idCompany},
-                            { status: 1 },
-                            { new: true }
-                        );
-                        if(result != null){
-                            res.status(200).json({status:true,data:result});
-                        } else {
-                            res.status(500).json({ error: "Duyệt không thành công" });
-                        }         
-                } else {
-                    res.status(500).json({ error: "Không đúng vai trò" });
-                }           
+            if (decoded.role == "trainingDepartment") {
+              let result = await UserModel.findOneAndUpdate(
+                { _id: req.body.idCompany },
+                { status: 1 },
+                { new: true }
+              );
+              if (result != null) {
+                res.status(200).json({ status: true, data: result });
+              } else {
+                res.status(500).json({ error: "Duyệt không thành công" });
+              }
+            } else {
+              res.status(500).json({ error: "Không đúng vai trò" });
             }
+          }
         }
-      )
-    }else{
+      );
+    } else {
       res.status(500).json({ error: v.errors });
     }
   } catch (err) {
@@ -213,13 +212,14 @@ export const confirmAccount = async (req, res) => {
   }
 };
 
-async function sendMail(toMail,subject,content) {
+async function sendMail(toMail, subject, content) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
-  
- 
+
   // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport(`smtps://${process.env.EMAIL}:${process.env.PASS}@smtp.gmail.com`);
+  let transporter = nodemailer.createTransport(
+    `smtps://${process.env.EMAIL}:${process.env.PASS}@smtp.gmail.com`
+  );
 
   let body = content;
   // send mail with defined transport object
@@ -246,44 +246,53 @@ export const deleteAccount = async (req, res) => {
       idUser: "required",
     });
     const matched = await v.check();
-    if(matched){
+    if (matched) {
       jwt.verify(
         req.body.secret_key,
         process.env.login_secret_key,
-        async (err,decoded) => {
-          if(err){
+        async (err, decoded) => {
+          if (err) {
             res.status(500).json({ error: err });
           }
-          if(decoded){
+          if (decoded) {
             console.log(decoded);
-            if(decoded.role == "trainingDepartment"){
-                  let email = await getEmailById(req.body.idUser);
-                  let deleteUser =  await UserModel.deleteOne({"_id":req.body.idUser})
-                  if(deleteUser){
-                    sendMail(email,"Thông báo","Tài khoản bạn vi phạm nội qui của khoa đào tạo nên đã bị xóa");    
-                    res.status(200).json({status:true,result:"Xóa thành công"});   
-                  }else{
-                    res.status(500).json({ error: "Xóa thất bại" });
-                  }             
+            if (decoded.role == "trainingDepartment") {
+              let email = await getEmailById(req.body.idUser);
+              let deleteUser = await UserModel.deleteOne({
+                _id: req.body.idUser,
+              });
+              if (deleteUser) {
+                sendMail(
+                  email,
+                  "Thông báo",
+                  "Tài khoản bạn vi phạm nội qui của khoa đào tạo nên đã bị xóa"
+                );
+                res
+                  .status(200)
+                  .json({ status: true, result: "Xóa thành công" });
+              } else {
+                res.status(500).json({ error: "Xóa thất bại" });
+              }
             } else {
-                    res.status(500).json({ error: "Không đúng vai trò" });
-                  }           
+              res.status(500).json({ error: "Không đúng vai trò" });
             }
+          }
         }
-      )
-    }else{
+      );
+    } else {
       res.status(500).json({ error: v.errors });
     }
   } catch (err) {
     res.status(500).json({ error: err });
   }
 };
+
 //get email by idUser
 async function getEmailById(id) {
   try {
     var user = await UserModel.findOne(
       {
-        _id: id 
+        _id: id,
       },
       "email"
     );
@@ -294,5 +303,89 @@ async function getEmailById(id) {
   }
 }
 
+//update profile
+export const updateProfile = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      secret_key: "required",
+      first_name: "required",
+      last_name: "required",
+      phone_number: "required|phoneNumber",
+      gender: "required",
+      day_of_birth: "required|integer",
+      month_of_birth: "required|integer",
+      year_of_birth: "required|integer",
+      address: "required",
+    });
+    const matched = await v.check();
+    if (matched) {
+      jwt.verify(
+        req.body.secret_key,
+        process.env.login_secret_key,
+        async (err, decoded) => {
+          if (err) {
+            res.status(500).json({ error: err });
+          }
+          if (decoded) {
+            let result = await editPersonalInformation(
+              decoded._id,
+              req.body.first_name,
+              req.body.last_name,
+              req.body.phone_number,
+              req.body.gender,
+              req.body.day_of_birth,
+              req.body.month_of_birth,
+              req.body.year_of_birth,
+              req.body.address
+            );
+            console.log(result);
+            if (result.status == true) {
+              res.status(200).json(result);
+            } else {
+              res.status(500).json(result);
+            }
+          }
+        }
+      );
+    } else {
+      res.status(500).json({ error: v.errors });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 
-
+// Edit personal information
+async function editPersonalInformation(
+  _id,
+  first_name,
+  last_name,
+  phone_number,
+  gender,
+  day_of_birth,
+  month_of_birth,
+  year_of_birth,
+  address
+) {
+  try {
+    let userDocs = {
+      first_name: first_name,
+      last_name: last_name,
+      phone_number: phone_number,
+      gender: gender,
+      day_of_birth: day_of_birth,
+      month_of_birth: month_of_birth,
+      year_of_birth: year_of_birth,
+      address: address,
+    };
+    // console.log(userDocs);
+    let result = await UserModel.updateOne({ _id: _id }, userDocs);
+    if (result) {
+      return { status: true, data: userDocs };
+    } else {
+      return { status: false, errors: "update thất bại" };
+    }
+  } catch (e) {
+    return e;
+  }
+}
