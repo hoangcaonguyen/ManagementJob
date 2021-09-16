@@ -54,6 +54,18 @@ const schema = new mongoose.Schema({
             type: String,
         }
     }],
+    list_student_pass_interview:[{
+        idStudent:{
+            type: String,
+            index : true
+        },
+        first_name:{
+            type: String,
+        },
+        last_name:{
+            type: String,
+        }
+    }],
     status:{
         type: Number,
         default:0

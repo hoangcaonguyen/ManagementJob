@@ -49,6 +49,18 @@ const schema = new mongoose.Schema({
         enum: ["student", "company", "trainingDepartment","undefined"],
         default: "undefined",
     },
+    list_rate:[{
+        rater_id:{
+            type: String,
+            index : true
+        },
+        id_task:{
+            type:String,
+        },
+        rater_comment:{
+            type: String,
+        }
+    }],
     status:{
         type: Number,
         default:0
