@@ -389,3 +389,60 @@ async function editPersonalInformation(
     return e;
   }
 }
+
+//get-verify-forgot-pass
+export const getCodeVerify = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      email: "required",
+    });
+    const matched = await v.check();
+    if (matched) {
+       let verifyNumber = Math.floor(Math.random() * (9999 - 1000) + 1000);
+       let result = await UserModel.findOneAndUpdate(
+                { email: req.body.email },
+                { codeVerify: verifyNumber },
+                { new: true }
+              );
+              if (result != null) {
+                sendMail(req.body.email,"Code forgot password of you",verifyNumber.toString());
+                res.status(200).json({ status: true, data: "Vui lòng check mial để lấy mã" });
+              } else {
+                res.status(500).json({ error: "Email không tồn tại" });
+              }
+    } else {
+      console.log("1")
+      res.status(500).json({ error: v.errors });
+    }
+  } catch (err) {
+     console.log("2")
+    res.status(500).json({ error: err });
+  }
+};
+export const newPassword= async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      email: "required",
+      code: "required",
+      password:"required"
+    });
+    const matched = await v.check();
+    if (matched) {
+       const password_hash = encrypt(req.body.password);
+       let result = await UserModel.findOneAndUpdate(
+                { email: req.body.email ,codeVerify:req.body.code},
+                { password: password_hash },
+                { new: true }
+              );
+              if (result != null) {
+                res.status(200).json({ status: true, data: "Cập nhập mật khẩu thành công" });
+              } else {
+                res.status(500).json({ error: "Email or code không đúng" });
+              }
+    } else {
+      res.status(500).json({ error: v.errors });
+    }
+  } catch (err) {    
+    res.status(500).json({ error: err });
+  }
+};

@@ -27,6 +27,9 @@ const schema = new mongoose.Schema({
         type :String, 
         required: true,
     }, 
+    position: {
+        type :String, 
+    },
     list_student_apply:[{
         idStudent:{
             type: String,

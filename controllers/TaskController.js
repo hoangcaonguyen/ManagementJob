@@ -68,6 +68,7 @@ export const postTask = async (req, res) => {
       task_description: "required",
       price: "required",
       location: "required",
+      position: "required"
     });
     const matched = await v.check();
     if (matched) {
@@ -88,6 +89,7 @@ export const postTask = async (req, res) => {
                 task_description: req.body.task_description,
                 price: req.body.price,
                 location: req.body.location,
+                position:req.body.position,
               });
 
               await task.save(function (err) {

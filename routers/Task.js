@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import {getTaskActive,postTask,confirmTask,applyTask,approveTask,getNumberStudentApply,noticeInterview,rateStudent,search} from "../controllers/TaskController.js";
+import {getTaskActive,postTask,confirmTask,applyTask,approveTask,getNumberStudentApply,noticeInterview,rateStudent,search,} from "../controllers/TaskController.js";
 
 router.get('/list-task-active',getTaskActive);
 router.post('/post-task',postTask);
