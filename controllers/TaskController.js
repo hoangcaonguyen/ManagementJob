@@ -68,7 +68,7 @@ export const postTask = async (req, res) => {
       task_description: "required",
       price: "required",
       location: "required",
-      position: "required"
+      position: "required",
     });
     const matched = await v.check();
     if (matched) {
@@ -89,7 +89,7 @@ export const postTask = async (req, res) => {
                 task_description: req.body.task_description,
                 price: req.body.price,
                 location: req.body.location,
-                position:req.body.position,
+                position: req.body.position,
               });
 
               await task.save(function (err) {
@@ -516,20 +516,90 @@ export const rateStudent = async (req, res) => {
 };
 //search
 export const search = async (req, res) => {
-  const {keySearch} = req.body;
+  const { keySearch } = req.body;
   try {
-       const searchResultTask = await TaskModel.find({
-        $text : {
-            $search :keySearch
-        }
-       },{});
-        const searchResultUser = await UserModel.find({
-        $text : {
-            $search :keySearch
-        }
-       },{});
-      res.status(200).json({success:true,data:{resultTask:searchResultTask,resultUser:searchResultUser}});
+    const searchResultTask = await TaskModel.find(
+      {
+        $text: {
+          $search: keySearch,
+        },
+      },
+      {}
+    );
+    const searchResultUser = await UserModel.find(
+      {
+        $text: {
+          $search: keySearch,
+        },
+      },
+      {}
+    );
+    res.status(200).json({
+      success: true,
+      data: { resultTask: searchResultTask, resultUser: searchResultUser },
+    });
   } catch (e) {
-      console.log(e);
+    console.log(e);
+  }
+};
+
+//company get student by id task
+async function getAllStudentsApproved(task_id) {
+  try {
+    let isApplied = await TaskModel.findOne(
+      {
+        _id: task_id,
+      },
+      [
+        "_id",
+        "list_student_approve"
+      ]
+    );
+    if (isApplied != null) {
+       return{
+         success:true,
+         data:isApplied
+       }
+    } else {
+      return {
+        success: false,
+        errors: { message: "Bài viết không tồn tại!!! " },
+      };
+    }
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
+}
+//kdt get student approved
+export const getStudentsApproved = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      secret_key: "required",
+      task_id: "required",
+    });
+    const matched = await v.check();
+    if (matched) {
+      jwt.verify(
+        req.body.secret_key,
+        process.env.login_secret_key,
+        async (err, decoded) => {
+          if (err) {
+            res.status(500).json({ error: err });
+          }
+          if (decoded) {
+            // console.log(decoded);
+            let result = await getAllStudentsApproved(req.body.task_id);
+            if (result.success) {
+              res.status(200).json({ status: true, data: result });
+            } else {
+              res.status(500).json({ error: result.errors.message });
+            }
+          }
+        }
+      );
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
   }
 };
