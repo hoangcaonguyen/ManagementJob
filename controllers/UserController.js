@@ -4,6 +4,8 @@ import niv from "node-input-validator";
 import CryptoJS from "crypto-js";
 ("use strict");
 import nodemailer from "nodemailer";
+import * as csv from "fast-csv";
+import * as fs from "fs";
 
 function encrypt(text) {
   return CryptoJS.HmacSHA256(text, process.env.encrypt_secret_key).toString(
@@ -398,51 +400,124 @@ export const getCodeVerify = async (req, res) => {
     });
     const matched = await v.check();
     if (matched) {
-       let verifyNumber = Math.floor(Math.random() * (9999 - 1000) + 1000);
-       let result = await UserModel.findOneAndUpdate(
-                { email: req.body.email },
-                { codeVerify: verifyNumber },
-                { new: true }
-              );
-              if (result != null) {
-                sendMail(req.body.email,"Code forgot password of you",verifyNumber.toString());
-                res.status(200).json({ status: true, data: "Vui lòng check mial để lấy mã" });
-              } else {
-                res.status(500).json({ error: "Email không tồn tại" });
-              }
+      let verifyNumber = Math.floor(Math.random() * (9999 - 1000) + 1000);
+      let result = await UserModel.findOneAndUpdate(
+        { email: req.body.email },
+        { codeVerify: verifyNumber },
+        { new: true }
+      );
+      if (result != null) {
+        sendMail(
+          req.body.email,
+          "Code forgot password of you",
+          verifyNumber.toString()
+        );
+        res
+          .status(200)
+          .json({ status: true, data: "Vui lòng check mial để lấy mã" });
+      } else {
+        res.status(500).json({ error: "Email không tồn tại" });
+      }
     } else {
-      console.log("1")
+      console.log("1");
       res.status(500).json({ error: v.errors });
     }
   } catch (err) {
-     console.log("2")
+    console.log("2");
     res.status(500).json({ error: err });
   }
 };
-export const newPassword= async (req, res) => {
+export const newPassword = async (req, res) => {
   try {
     const v = new niv.Validator(req.body, {
       email: "required",
       code: "required",
-      password:"required"
+      password: "required",
     });
     const matched = await v.check();
     if (matched) {
-       const password_hash = encrypt(req.body.password);
-       let result = await UserModel.findOneAndUpdate(
-                { email: req.body.email ,codeVerify:req.body.code},
-                { password: password_hash },
-                { new: true }
-              );
-              if (result != null) {
-                res.status(200).json({ status: true, data: "Cập nhập mật khẩu thành công" });
-              } else {
-                res.status(500).json({ error: "Email or code không đúng" });
-              }
+      const password_hash = encrypt(req.body.password);
+      let result = await UserModel.findOneAndUpdate(
+        { email: req.body.email, codeVerify: req.body.code },
+        { password: password_hash },
+        { new: true }
+      );
+      if (result != null) {
+        res
+          .status(200)
+          .json({ status: true, data: "Cập nhập mật khẩu thành công" });
+      } else {
+        res.status(500).json({ error: "Email or code không đúng" });
+      }
     } else {
       res.status(500).json({ error: v.errors });
     }
-  } catch (err) {    
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+
+//process file CSV
+async function processFileCSV(file) {
+  try {
+    var stream = fs.createReadStream(file);
+    var csvStream = csv()
+      .on("data", function(data){
+        var item = ({
+          name: data[0] ,
+          price: data[1]   ,
+          category: data[2],
+          description: data[3],
+          manufacturer:data[4] 
+        });
+        stream.pipe(csvStream);
+        let result = item;
+        if (result) {
+          return { success: true,data: result };
+        } else {
+          return { success: false, errors: {message: "upload thất bại" }};
+        }
+      })
+  } catch (e) {
+    return e;
+  }
+}
+
+//upload user from csv to mongodb
+export const uploadCSV = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      secret_key: "required",
+      file: "required",
+    });
+    const matched = await v.check();
+    if (matched) {
+      jwt.verify(
+        req.body.secret_key,
+        process.env.login_secret_key,
+        async (err, decoded) => {
+          if (err) {
+            res.status(500).json({ error: err });
+          }
+          if (decoded) {
+            console.log(decoded);
+            if (decoded.role == "trainingDepartment") {
+              let result = await processFileCSV(
+                req.body.file,
+              );
+              if (result.success) {
+                res.status(200).json({ status: true, data: result });
+              } else {
+                res.status(500).json({ error: result.errors.message });
+              }
+            } else {
+              res.status(500).json({ error: "Không đúng vai trò" });
+            }
+          }
+        }
+      );
+    }
+  } catch (err) {
     res.status(500).json({ error: err });
   }
 };
