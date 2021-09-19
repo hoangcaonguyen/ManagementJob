@@ -1,11 +1,13 @@
 import { UserModel } from "../models/User.js";
 import jwt from "jsonwebtoken";
 import niv from "node-input-validator";
+import xlsx from "xlsx";
 import CryptoJS from "crypto-js";
 ("use strict");
 import nodemailer from "nodemailer";
 import * as csv from "fast-csv";
 import * as fs from "fs";
+import multer  from "multer";
 
 function encrypt(text) {
   return CryptoJS.HmacSHA256(text, process.env.encrypt_secret_key).toString(
@@ -517,6 +519,42 @@ export const uploadCSV = async (req, res) => {
         }
       );
     }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+
+
+export const upload = async (req, res) => {
+  try {
+    var src = "./upload/"+req.file.filename;
+    var wb = await xlsx.readFile(src,{cellDates:true});
+    var ws = wb.Sheets[wb.SheetNames];
+    var data = xlsx.utils.sheet_to_json(ws);
+    for(var i=0 ; i< data.length ; i++) {
+       if ((await isEmailExit(data[i].email)) == false) {
+            const password_hash = encrypt(data[i].password);
+            const user = new UserModel({
+              password: password_hash,
+              email: data[i].email,
+              first_name: data[i].first_name,
+              last_name: data[i].last_name,
+              role: data[i].role,
+              phonenumber: data[i].phonenumber,
+              day_of_birth: data[i].day_of_birth,
+              month_of_birth: data[i].month_of_birth,
+              year_of_birth: data[i].year_of_birth,
+              gender :data[i].gender,
+              role:data[i].role,
+              codeStudent:data[i].codeStudent,
+            });
+            await user.save();  
+       }else{
+          res.status(500).json({ mess: "Có email tồn tại email trong hệ thống" });
+       }
+        
+    } 
+    res.status(200).json({ status: true,mess:"Thêm thành công"});
   } catch (err) {
     res.status(500).json({ error: err });
   }
