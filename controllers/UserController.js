@@ -524,10 +524,9 @@ export const uploadCSV = async (req, res) => {
   }
 };
 
-
 export const upload = async (req, res) => {
   try {
-    var src = "./upload/"+req.file.filename;
+    var src = "./public/excel/"+req.file.filename;
     var wb = await xlsx.readFile(src,{cellDates:true});
     var ws = wb.Sheets[wb.SheetNames];
     var data = xlsx.utils.sheet_to_json(ws);
@@ -555,6 +554,42 @@ export const upload = async (req, res) => {
         
     } 
     res.status(200).json({ status: true,mess:"Thêm thành công"});
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+//kdt-delete-account
+export const updateImage = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      secret_key: "required",
+    });
+    const matched = await v.check();
+    if (matched) {
+      jwt.verify(
+        req.body.secret_key,
+        process.env.login_secret_key,
+        async (err, decoded) => {
+          if (err) {
+            res.status(500).json({ error: err });
+          }
+          if (decoded) {
+             let result = await UserModel.findOneAndUpdate(
+                { _id: decoded._id },
+                { image: req.file.filename },
+                { new: true }
+              );
+              if (result != null) {
+                res.status(200).json({ status: true, data: result });
+              } else {
+                res.status(500).json({ error: "Cập nhật ảnh thất bại" });
+              }
+          }
+        }
+      );
+    } else {
+      res.status(500).json({ error: v.errors });
+    }
   } catch (err) {
     res.status(500).json({ error: err });
   }

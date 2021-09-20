@@ -13,6 +13,7 @@ const URI = process.env.DATABASE_URL ;
 app.use(bodyParser.json({limit: "30mb" }));
 app.use(bodyParser.urlencoded({ extended: true , limit: "30mb" }));
 app.use(cors());
+app.use(express.static("public"));
 app.use('/user', User);
 app.use('/user/task', Task);
 

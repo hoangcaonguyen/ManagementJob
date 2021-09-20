@@ -23,6 +23,11 @@ const schema = new mongoose.Schema({
         type :Number, 
         required: true, 
     },
+    type: {
+        type: String,
+        enum: ["intern", "official","undefined"],
+        default: "undefined",
+    },
     location:{
         type :String, 
         required: true,
