@@ -1,4 +1,5 @@
 import { UserModel } from "../models/User.js";
+import { TaskModel } from "../models/Task.js";
 import jwt from "jsonwebtoken";
 import niv from "node-input-validator";
 import xlsx from "xlsx";
@@ -7,7 +8,13 @@ import CryptoJS from "crypto-js";
 import nodemailer from "nodemailer";
 import * as csv from "fast-csv";
 import * as fs from "fs";
-import multer  from "multer";
+import multer from "multer";
+import cloudinary from "cloudinary";
+cloudinary.config({
+  cloud_name: "ilike",
+  api_key: "678772438397898",
+  api_secret: "zvdEWEfrF38a2dLOtVp-3BulMno",
+});
 
 function encrypt(text) {
   return CryptoJS.HmacSHA256(text, process.env.encrypt_secret_key).toString(
@@ -15,10 +22,147 @@ function encrypt(text) {
   );
 }
 
+const uploadImg = async (path) => {
+  let res;
+  try {
+    res = await cloudinary.uploader.upload(path);
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+  return res.secure_url;
+};
+
 export const getAll = async (req, res) => {
   try {
     const listUser = await UserModel.find();
     res.status(200).json(listUser);
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getListNtd = async (req, res) => {
+  try {
+    const listNtd = await UserModel.find({ role: "company" }, {});
+    res.status(200).json({
+      status: true,
+      data: listNtd,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getListStudent = async (req, res) => {
+  try {
+    const listStudent = await UserModel.find({ role: "student" }, {});
+    res.status(200).json({
+      status: true,
+      data: listStudent,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getListNtdUnActive = async (req, res) => {
+  try {
+    const listNtd = await UserModel.find({ role: "company", status: 0 }, {});
+    res.status(200).json({
+      status: true,
+      data: listNtd,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getListNtdActive = async (req, res) => {
+  try {
+    const listNtd = await UserModel.find({ role: "company", status: 1 }, {});
+    res.status(200).json({
+      status: true,
+      data: listNtd,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getOneInfo = async (req, res) => {
+  try {
+    let listUser = await UserModel.findOne({ _id: req.query.id }, [
+      "fullName",
+      "email",
+      "phonenumber",
+      "title_job",
+      "additional_info",
+      "gender",
+      "birthday",
+      "certification",
+      "experience",
+      "major",
+      "name_of_school",
+      "image",
+      "objective",
+      "type_of_student",
+      "skills",
+      "address",
+      "role",
+      "name_Hr",
+      "company_summary",
+      "address",
+      "name_company",
+    ]);
+    res.status(200).json({
+      status: true,
+      data: listUser,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getInfo = async (req, res) => {
+  let arrType = ["AT14-CT2", "AT15-CT3", "AT16-CT4", "CT17-CT5"];
+  let arrMajor = [
+    "Công nghệ thông tin",
+    "An toàn thông tin",
+    "Điện tử viễn thông",
+  ];
+  let arrSex = ["male", "female", "other"];
+  let objects = {
+    arrType,
+    arrMajor,
+    arrSex,
+  };
+  try {
+    res.status(200).json({
+      status: true,
+      data: objects,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getTitleJob = async (req, res) => {
+  let arrTitleJob = [
+    "Android fresher",
+    "Unity Game Developer (Fresher/Junior)",
+    "MIDDLE ANDROID DEVELOPER",
+    "Unity Game Developer (Fresher/Junior)",
+    "PHP Developer Game",
+    "iOS Developer",
+    "Full Stack Developer - All Levels",
+    "Mobile Dev (iOS, Android, React Native)",
+    "React Native Developer",
+    "React Native Engineer",
+    "Data Engineer",
+    "Flutter Developer (iOS, Android)",
+  ];
+  let objects = {
+    arrTitleJob,
+  };
+  try {
+    res.status(200).json({
+      status: true,
+      data: objects,
+    });
   } catch (e) {
     console.log(e);
   }
@@ -29,10 +173,12 @@ export const register = async (req, res) => {
     const v = new niv.Validator(req.body, {
       password: "required|minLength:8",
       email: "required|email",
-      first_name: "required|maxLength:50",
-      last_name: "required|maxLength:50",
+      name_company: "required|maxLength:50",
       role: "required",
+      company_summary: "required",
       phonenumber: "required|phoneNumber",
+      address: "required",
+      name_Hr: "required",
     });
     const matched = await v.check();
     if (matched) {
@@ -41,16 +187,12 @@ export const register = async (req, res) => {
         const user = new UserModel({
           password: password_hash,
           email: req.body.email,
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
+          name_company: req.body.name_company,
           role: req.body.role,
           phonenumber: req.body.phonenumber,
-          gender: req.body.gender,
-          codeStudent: req.body.codeStudent,
-          day_of_birth: req.body.day_of_birth,
-          month_of_birth: req.body.month_of_birth,
-          year_of_birth: req.body.year_of_birth,
           address: req.body.address,
+          company_summary: req.body.company_summary,
+          name_Hr: req.body.name_Hr,
         });
         await user.save(function (err) {
           if (err) {
@@ -64,6 +206,60 @@ export const register = async (req, res) => {
           .status(500)
           .json({ success: false, messages: "Email đã tồn tại !!!" });
       }
+    } else {
+      res.status(500).json({ errors: v.errors });
+    }
+  } catch (err) {
+    res.status(500).json({ errors: err });
+  }
+};
+export const registerAdmin = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      password: "required|minLength:8",
+      email: "required|email",
+      role: "required",
+      secret_key: "required",
+    });
+    const matched = await v.check();
+    if (matched) {
+      jwt.verify(
+        req.body.secret_key,
+        process.env.login_secret_key,
+        async (err, decoded) => {
+          if (err) {
+            res.status(500).json({ error: err });
+          }
+          if (decoded) {
+            console.log(decoded);
+            if (decoded.role == "admin") {
+              if ((await isEmailExit(req.body.email)) == false) {
+                const password_hash = encrypt(req.body.password);
+                const user = new UserModel({
+                  password: password_hash,
+                  email: req.body.email,
+                  role: req.body.role,
+                  status: 1,
+                });
+                await user.save(function (err) {
+                  if (err) {
+                    res.status(500).json({ success: false, errors: err });
+                  } else {
+                    res.status(200).json({ success: true, data: user });
+                  }
+                });
+              } else {
+                res.status(500).json({
+                  success: false,
+                  messages: "Email đã tồn tại !!!",
+                });
+              }
+            } else {
+              res.status(500).json({ error: "Không đúng vai trò" });
+            }
+          }
+        }
+      );
     } else {
       res.status(500).json({ errors: v.errors });
     }
@@ -173,12 +369,23 @@ export const login = async (req, res) => {
   }
 };
 
+export const getListTaskByNtd = async (req, res) => {
+  try {
+    let listTask = await TaskModel.find({ task_owner_id: req.query.idNtd });
+    res.status(200).json({
+      status: true,
+      data: listTask,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
 //kdt-confirm-account-ntd
 export const confirmAccount = async (req, res) => {
   try {
     const v = new niv.Validator(req.body, {
       secret_key: "required",
-      idCompany: "required",
+      arrIdCompany: "required",
     });
     const matched = await v.check();
     if (matched) {
@@ -192,11 +399,14 @@ export const confirmAccount = async (req, res) => {
           if (decoded) {
             console.log(decoded);
             if (decoded.role == "trainingDepartment") {
-              let result = await UserModel.findOneAndUpdate(
-                { _id: req.body.idCompany },
-                { status: 1 },
-                { new: true }
-              );
+              let result = null;
+              for (var i = 0; i < req.body.arrIdCompany.length; i++) {
+                result = await UserModel.findOneAndUpdate(
+                  { _id: req.body.arrIdCompany[i] },
+                  { status: 1 },
+                  { new: true }
+                );
+              }
               if (result != null) {
                 res.status(200).json({ status: true, data: result });
               } else {
@@ -312,14 +522,6 @@ export const updateProfile = async (req, res) => {
   try {
     const v = new niv.Validator(req.body, {
       secret_key: "required",
-      first_name: "required",
-      last_name: "required",
-      phone_number: "required|phoneNumber",
-      gender: "required",
-      day_of_birth: "required|integer",
-      month_of_birth: "required|integer",
-      year_of_birth: "required|integer",
-      address: "required",
     });
     const matched = await v.check();
     if (matched) {
@@ -333,14 +535,60 @@ export const updateProfile = async (req, res) => {
           if (decoded) {
             let result = await editPersonalInformation(
               decoded._id,
-              req.body.first_name,
-              req.body.last_name,
-              req.body.phone_number,
+              req.body.fullName,
+              req.body.phonenumber,
               req.body.gender,
-              req.body.day_of_birth,
-              req.body.month_of_birth,
-              req.body.year_of_birth,
-              req.body.address
+              req.body.birthday,
+              req.body.address,
+              req.body.title_job,
+              req.body.additional_info,
+              req.body.certification,
+              req.body.experience,
+              req.body.major,
+              req.body.name_of_school,
+              req.body.type_of_student,
+              req.body.objective,
+              req.body.skills
+            );
+            console.log(result);
+            if (result.status == true) {
+              res.status(200).json(result);
+            } else {
+              res.status(500).json(result);
+            }
+          }
+        }
+      );
+    } else {
+      res.status(500).json({ error: v.errors });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+//update profile ntd
+export const updateProfileNtd = async (req, res) => {
+  try {
+    const v = new niv.Validator(req.body, {
+      secret_key: "required",
+    });
+    const matched = await v.check();
+    if (matched) {
+      jwt.verify(
+        req.body.secret_key,
+        process.env.login_secret_key,
+        async (err, decoded) => {
+          if (err) {
+            res.status(500).json({ error: err });
+          }
+          if (decoded) {
+            let result = await editPersonalInformationNtd(
+              decoded._id,
+              req.body.name_company,
+              req.body.phonenumber,
+              req.body.address,
+              req.body.company_summary,
+              req.body.name_Hr
             );
             console.log(result);
             if (result.status == true) {
@@ -359,28 +607,68 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// Edit personal information
-async function editPersonalInformation(
+async function editPersonalInformationNtd(
   _id,
-  first_name,
-  last_name,
-  phone_number,
-  gender,
-  day_of_birth,
-  month_of_birth,
-  year_of_birth,
-  address
+  name_company,
+  phonenumber,
+  address,
+  company_summary,
+  name_Hr
 ) {
   try {
     let userDocs = {
-      first_name: first_name,
-      last_name: last_name,
-      phone_number: phone_number,
-      gender: gender,
-      day_of_birth: day_of_birth,
-      month_of_birth: month_of_birth,
-      year_of_birth: year_of_birth,
+      name_company: name_company,
+      phonenumber: phonenumber,
       address: address,
+      company_summary: company_summary,
+      name_Hr: name_Hr,
+    };
+    // console.log(userDocs);
+    let result = await UserModel.updateOne({ _id: _id }, userDocs);
+    if (result) {
+      return { status: true, data: userDocs };
+    } else {
+      return { status: false, errors: "update thất bại" };
+    }
+  } catch (e) {
+    return e;
+  }
+}
+
+// Edit personal information
+async function editPersonalInformation(
+  _id,
+  fullName,
+  phonenumber,
+  gender,
+  birthday,
+  address,
+  title_job,
+  additional_info,
+  certification,
+  experience,
+  major,
+  name_of_school,
+  type_of_student,
+  objective,
+  skills
+) {
+  try {
+    let userDocs = {
+      fullName: fullName,
+      phonenumber: phonenumber,
+      gender: gender,
+      birthday: birthday,
+      address: address,
+      title_job: title_job,
+      additional_info: additional_info,
+      certification: certification,
+      experience: experience,
+      major: major,
+      name_of_school: name_of_school,
+      type_of_student: type_of_student,
+      objective: objective,
+      skills: skills,
     };
     // console.log(userDocs);
     let result = await UserModel.updateOne({ _id: _id }, userDocs);
@@ -416,7 +704,7 @@ export const getCodeVerify = async (req, res) => {
         );
         res
           .status(200)
-          .json({ status: true, data: "Vui lòng check mial để lấy mã" });
+          .json({ status: true, data: "Vui lòng check mail để lấy mã" });
       } else {
         res.status(500).json({ error: "Email không tồn tại" });
       }
@@ -463,23 +751,22 @@ export const newPassword = async (req, res) => {
 async function processFileCSV(file) {
   try {
     var stream = fs.createReadStream(file);
-    var csvStream = csv()
-      .on("data", function(data){
-        var item = ({
-          name: data[0] ,
-          price: data[1]   ,
-          category: data[2],
-          description: data[3],
-          manufacturer:data[4] 
-        });
-        stream.pipe(csvStream);
-        let result = item;
-        if (result) {
-          return { success: true,data: result };
-        } else {
-          return { success: false, errors: {message: "upload thất bại" }};
-        }
-      })
+    var csvStream = csv().on("data", function (data) {
+      var item = {
+        name: data[0],
+        price: data[1],
+        category: data[2],
+        description: data[3],
+        manufacturer: data[4],
+      };
+      stream.pipe(csvStream);
+      let result = item;
+      if (result) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, errors: { message: "upload thất bại" } };
+      }
+    });
   } catch (e) {
     return e;
   }
@@ -504,9 +791,7 @@ export const uploadCSV = async (req, res) => {
           if (decoded) {
             console.log(decoded);
             if (decoded.role == "trainingDepartment") {
-              let result = await processFileCSV(
-                req.body.file,
-              );
+              let result = await processFileCSV(req.body.file);
               if (result.success) {
                 res.status(200).json({ status: true, data: result });
               } else {
@@ -526,34 +811,30 @@ export const uploadCSV = async (req, res) => {
 
 export const upload = async (req, res) => {
   try {
-    var src = "./public/excel/"+req.file.filename;
-    var wb = await xlsx.readFile(src,{cellDates:true});
+    var src = "./public/excel/" + req.file.filename;
+    var wb = await xlsx.readFile(src, { cellDates: true });
     var ws = wb.Sheets[wb.SheetNames];
     var data = xlsx.utils.sheet_to_json(ws);
-    for(var i=0 ; i< data.length ; i++) {
-       if ((await isEmailExit(data[i].email)) == false) {
-            const password_hash = encrypt(data[i].password);
-            const user = new UserModel({
-              password: password_hash,
-              email: data[i].email,
-              first_name: data[i].first_name,
-              last_name: data[i].last_name,
-              role: data[i].role,
-              phonenumber: data[i].phonenumber,
-              day_of_birth: data[i].day_of_birth,
-              month_of_birth: data[i].month_of_birth,
-              year_of_birth: data[i].year_of_birth,
-              gender :data[i].gender,
-              role:data[i].role,
-              codeStudent:data[i].codeStudent,
-            });
-            await user.save();  
-       }else{
-          res.status(500).json({ mess: "Có email tồn tại email trong hệ thống" });
-       }
-        
-    } 
-    res.status(200).json({ status: true,mess:"Thêm thành công"});
+    for (var i = 0; i < data.length; i++) {
+      if ((await isEmailExit(data[i].email)) == false) {
+        const password_hash = encrypt(data[i].password);
+        const user = new UserModel({
+          password: password_hash,
+          email: data[i].email,
+          fullName: data[i].fullName,
+          role: data[i].role,
+          phonenumber: data[i].phonenumber,
+          birthday: data[i].birthday,
+          gender: data[i].gender,
+          type_of_student: data[i].type_of_student,
+          status: data[i].status,
+        });
+        await user.save();
+      } else {
+        res.status(500).json({ mess: "Có email tồn tại email trong hệ thống" });
+      }
+    }
+    res.status(200).json({ status: true, mess: "Thêm thành công" });
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -574,16 +855,21 @@ export const updateImage = async (req, res) => {
             res.status(500).json({ error: err });
           }
           if (decoded) {
-             let result = await UserModel.findOneAndUpdate(
-                { _id: decoded._id },
-                { image: req.file.filename },
-                { new: true }
-              );
-              if (result != null) {
-                res.status(200).json({ status: true, data: result });
-              } else {
-                res.status(500).json({ error: "Cập nhật ảnh thất bại" });
-              }
+            let urlImg = await uploadImg(req.file.path);
+            if (urlImg === false) {
+              res.status(500).json({ msg: "server error" });
+              return;
+            }
+            let result = await UserModel.findOneAndUpdate(
+              { _id: decoded._id },
+              { image: urlImg },
+              { new: true }
+            );
+            if (result != null) {
+              res.status(200).json({ status: true, data: result });
+            } else {
+              res.status(500).json({ error: "Cập nhật ảnh thất bại" });
+            }
           }
         }
       );

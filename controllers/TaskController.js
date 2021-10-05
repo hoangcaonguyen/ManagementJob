@@ -4,15 +4,39 @@ import jwt from "jsonwebtoken";
 import niv from "node-input-validator";
 
 //get all task
-export const getTaskActive = async (req, res) => {
+export const getAllTask = async (req, res) => {
   try {
-    const listTask = await TaskModel.find({ status: 1 });
-    res.status(200).json(listTask);
+    const listTask = await TaskModel.find();
+    res.status(200).json({
+      status: true,
+      data: listTask,
+    });
   } catch (e) {
     console.log(e);
   }
 };
-
+export const getListPostUnactive = async (req, res) => {
+  try {
+    const listPost = await TaskModel.find({ status: 0 }, {});
+    res.status(200).json({
+      status: true,
+      data: listPost,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const getListPostActive = async (req, res) => {
+  try {
+    const listPost = await TaskModel.find({ status: 1 }, {});
+    res.status(200).json({
+      status: true,
+      data: listPost,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
 export const getNumberStudentApply = async (req, res) => {
   try {
     const v = new niv.Validator(req.body, {
@@ -37,11 +61,10 @@ export const getNumberStudentApply = async (req, res) => {
                 },
                 "list_student_apply"
               );
-              console.log(result.list_student_apply.length);
               if (result.list_student_apply.length >= 0) {
                 res.status(200).json({
                   status: true,
-                  data: result.list_student_apply.length,
+                  data: result.list_student_apply,
                 });
               } else {
                 res.status(500).json({ error: "Thất bại" });
@@ -64,11 +87,12 @@ export const postTask = async (req, res) => {
   try {
     const v = new niv.Validator(req.body, {
       secret_key: "required",
-      task_title: "required|maxLength:50",
+      name_job: "required|maxLength:50",
       task_description: "required",
-      price: "required",
+      expires: "required",
+      name_company: "required",
       location: "required",
-      position: "required",
+      benefits_enjoyed: "required",
     });
     const matched = await v.check();
     if (matched) {
@@ -81,15 +105,21 @@ export const postTask = async (req, res) => {
           }
           if (decoded) {
             if (decoded.role == "company") {
+              let arr = [
+                {
+                  require: req.body.require,
+                  priorty: req.body.priorty,
+                },
+              ];
               const task = new TaskModel({
-                task_title: req.body.task_title,
+                name_job: req.body.name_job,
                 task_owner_id: decoded._id,
-                task_owner_first_name: decoded.first_name,
-                task_owner_last_name: decoded.last_name,
                 task_description: req.body.task_description,
-                price: req.body.price,
+                expires: req.body.expires,
                 location: req.body.location,
-                position: req.body.position,
+                name_company: req.body.name_company,
+                require_candidate: arr,
+                benefits_enjoyed: req.body.benefits_enjoyed,
               });
 
               await task.save(function (err) {
@@ -114,10 +144,11 @@ export const postTask = async (req, res) => {
 };
 //confirm post task
 export const confirmTask = async (req, res) => {
+  console.log();
   try {
     const v = new niv.Validator(req.body, {
       secret_key: "required",
-      idTask: "required",
+      arrIdTask: "required",
     });
     const matched = await v.check();
     if (matched) {
@@ -131,11 +162,14 @@ export const confirmTask = async (req, res) => {
           if (decoded) {
             console.log(decoded);
             if (decoded.role == "trainingDepartment") {
-              let result = await TaskModel.findOneAndUpdate(
-                { _id: req.body.idTask },
-                { status: 1 },
-                { new: true }
-              );
+              let result = null;
+              for (var i = 0; i < req.body.arrIdTask.length; i++) {
+                result = await TaskModel.findOneAndUpdate(
+                  { _id: req.body.arrIdTask[i] },
+                  { status: 1 },
+                  { new: true }
+                );
+              }
               if (result != null) {
                 res.status(200).json({ status: true, data: result });
               } else {
@@ -550,16 +584,13 @@ async function getAllStudentsApproved(task_id) {
       {
         _id: task_id,
       },
-      [
-        "_id",
-        "list_student_approve"
-      ]
+      ["_id", "list_student_approve"]
     );
     if (isApplied != null) {
-       return{
-         success:true,
-         data:isApplied
-       }
+      return {
+        success: true,
+        data: isApplied,
+      };
     } else {
       return {
         success: false,

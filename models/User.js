@@ -1,85 +1,114 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const schema = new mongoose.Schema({
-    first_name: {
-         type: String,
+const schema = new mongoose.Schema(
+  {
+    fullName: {
+      type: String,
     },
-    last_name: {
-        type: String,
+    name_company: {
+      type: String,
     },
     password: {
-        type: String, 
-        required: true, 
+      type: String,
+      required: true,
     },
     email: {
-        type :String, 
-        required: true, 
+      type: String,
+      required: true,
     },
     phonenumber: {
-        type :String, 
+      type: String,
     },
-    codeStudent:{
-        type :String, 
+    type_of_student: {
+      type: String,
     },
-    day_of_birth: {
-        type: Number,
+    name_Hr: {
+      type: String,
     },
-    month_of_birth: {
-        type: Number,
+    birthday: {
+      type: String,
     },
-    year_of_birth: {
-        type: Number,
+    company_summary: {
+      type: String,
+    },
+    title_job: {
+      type: String,
+    },
+    additional_info: {
+      type: String,
+    },
+    certification: {
+      type: String,
+    },
+    experience: {
+      type: String,
+    },
+    objective: {
+      type: String,
+    },
+    skills: {
+      type: String,
+    },
+    major: {
+      type: String,
+    },
+    name_of_school: {
+      type: String,
     },
     address: {
-        type: String,
+      type: String,
     },
-    list_task:[{
-        idTask:{
-             type: String,
-            index : true
-        }
-    }],
+    list_task: [
+      {
+        idTask: {
+          type: String,
+          index: true,
+        },
+      },
+    ],
     gender: {
-        type: String,
-        enum: ["male", "female", "undefined"],
-        default: "undefined",
+      type: String,
+      enum: ["male", "female", "undefined"],
+      default: "undefined",
     },
     role: {
-        type: String,
-        enum: ["student", "company", "trainingDepartment","undefined"],
-        default: "undefined",
+      type: String,
+      enum: ["student", "company", "trainingDepartment", "admin", "undefined"],
+      default: "undefined",
     },
-    list_rate:[{
-        rater_id:{
-            type: String,
-            index : true
+    list_rate: [
+      {
+        rater_id: {
+          type: String,
+          index: true,
         },
-        id_task:{
-            type:String,
+        id_task: {
+          type: String,
         },
-        rater_comment:{
-            type: String,
-        }
-    }],
-    codeVerify:{
-         type:Number,  
-         default:0 
+        rater_comment: {
+          type: String,
+        },
+      },
+    ],
+    codeVerify: {
+      type: Number,
+      default: 0,
     },
-    image:{
-        type:String,
+    image: {
+      type: String,
     },
-    status:{
-        type: Number,
-        default:0
-    }
-    
-},{timestamps:true});
-schema.index(
-    {
-        first_name : "text",
-        last_name : "text",
-        email : "text",
-        address : "text",
-    }
+    status: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true }
 );
-export const UserModel = mongoose.model("User", schema)
+schema.index({
+  first_name: "text",
+  last_name: "text",
+  email: "text",
+  fullName: "text",
+  address: "text",
+});
+export const UserModel = mongoose.model("User", schema);
