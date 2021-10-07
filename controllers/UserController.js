@@ -297,7 +297,7 @@ async function checkLogin(email, password) {
       if (statusUser.status == 1) {
         return "success";
       } else {
-        console.log("sds");
+        console.log("chuaduockickhoat");
         return { message: "Tài khoản chưa được khoa đào tạo duyệt" };
       }
     } else {
