@@ -145,7 +145,7 @@ export const getTitleJob = async (req, res) => {
     "Android fresher",
     "Unity Game Developer (Fresher/Junior)",
     "MIDDLE ANDROID DEVELOPER",
-    "Unity Game Developer (Fresher/Junior)",
+    "Front End Mobile App Dev - React Native",
     "PHP Developer Game",
     "iOS Developer",
     "Full Stack Developer - All Levels",
@@ -154,6 +154,7 @@ export const getTitleJob = async (req, res) => {
     "React Native Engineer",
     "Data Engineer",
     "Flutter Developer (iOS, Android)",
+    "AI",
   ];
   let objects = {
     arrTitleJob,
