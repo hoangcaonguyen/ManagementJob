@@ -399,7 +399,7 @@ export const confirmAccount = async (req, res) => {
           }
           if (decoded) {
             console.log(decoded);
-            if (decoded.role == "trainingDepartment") {
+            if (decoded.role == "admin") {
               let result = null;
               for (var i = 0; i < req.body.arrIdCompany.length; i++) {
                 result = await UserModel.findOneAndUpdate(
@@ -409,7 +409,7 @@ export const confirmAccount = async (req, res) => {
                 );
               }
               if (result != null) {
-                res.status(200).json({ status: true, data: result });
+                res.status(200).json({ status: true });
               } else {
                 res.status(500).json({ error: "Duyệt không thành công" });
               }
