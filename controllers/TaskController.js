@@ -54,7 +54,7 @@ export const getNumberStudentApply = async (req, res) => {
           }
           if (decoded) {
             console.log(decoded);
-            if (decoded.role == "trainingDepartment") {
+            if (decoded.role == "admin") {
               var result = await TaskModel.findOne(
                 {
                   _id: req.body.idTask,
@@ -161,7 +161,7 @@ export const confirmTask = async (req, res) => {
           }
           if (decoded) {
             console.log(decoded);
-            if (decoded.role == "trainingDepartment") {
+            if (decoded.role == "admin") {
               let result = null;
               for (var i = 0; i < req.body.arrIdTask.length; i++) {
                 result = await TaskModel.findOneAndUpdate(
@@ -342,7 +342,7 @@ export const approveTask = async (req, res) => {
           }
           if (decoded) {
             console.log(decoded);
-            if (decoded.role == "trainingDepartment") {
+            if (decoded.role == "admin") {
               let result = await addApproveJob(
                 req.body.idUser,
                 req.body.idTask
