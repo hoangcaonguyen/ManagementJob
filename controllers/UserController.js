@@ -471,7 +471,7 @@ export const deleteAccount = async (req, res) => {
           }
           if (decoded) {
             console.log(decoded);
-            if (decoded.role == "trainingDepartment") {
+            if (decoded.role == "admin") {
               let email = await getEmailById(req.body.idUser);
               let deleteUser = await UserModel.deleteOne({
                 _id: req.body.idUser,
@@ -791,7 +791,7 @@ export const uploadCSV = async (req, res) => {
           }
           if (decoded) {
             console.log(decoded);
-            if (decoded.role == "trainingDepartment") {
+            if (decoded.role == "admin") {
               let result = await processFileCSV(req.body.file);
               if (result.success) {
                 res.status(200).json({ status: true, data: result });
