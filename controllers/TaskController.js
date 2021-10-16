@@ -223,8 +223,10 @@ async function addApplyJob(user_id, task_id, text) {
             list_student_apply: {
               idStudent: user_id,
               fullName: user.fullName,
-              email: user.email,
               text: text,
+              email: user.email,
+              type_of_student: user.type_of_student,
+              experience: user.experience,
             },
           },
         }
@@ -309,9 +311,17 @@ async function addApproveJob(user_id, task_id) {
             list_student_approve: {
               idStudent: user_id,
               fullName: user.fullName,
+              text: text,
               email: user.email,
+              type_of_student: user.type_of_student,
+              experience: user.experience,
             },
           },
+          $pull: {
+            list_student_apply: {
+              idStudent: user_id,
+            },
+          },  
         }
       );
       if (applyTask) {

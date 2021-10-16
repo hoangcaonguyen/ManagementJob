@@ -20,7 +20,7 @@ const schema = new mongoose.Schema(
       type: String,
     },
     type_of_student: {
-      type: String,
+      type: Number,
     },
     name_Hr: {
       type: String,
@@ -41,7 +41,7 @@ const schema = new mongoose.Schema(
       type: String,
     },
     experience: {
-      type: String,
+      type: Number,
     },
     objective: {
       type: String,

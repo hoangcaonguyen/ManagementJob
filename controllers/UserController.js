@@ -828,6 +828,7 @@ export const upload = async (req, res) => {
           birthday: data[i].birthday,
           gender: data[i].gender,
           type_of_student: data[i].type_of_student,
+          experience: data[i].experience,
           status: data[i].status,
         });
         await user.save();
