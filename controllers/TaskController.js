@@ -332,7 +332,7 @@ export const approveTask = async (req, res) => {
     const v = new niv.Validator(req.body, {
       secret_key: "required",
       idTask: "required",
-      idUser: "required",
+      arrIdUser: "required",
     });
     const matched = await v.check();
     if (matched) {
@@ -346,10 +346,12 @@ export const approveTask = async (req, res) => {
           if (decoded) {
             console.log(decoded);
             if (decoded.role == "admin") {
-              let result = await addApproveJob(
-                req.body.idUser,
-                req.body.idTask
-              );
+              for (var i = 0; i < req.body.arrIdUser.length; i++) {
+                result = await addApproveJob(
+                  req.body.arrIdUser[i],
+                  req.body.idTask
+                );
+             } 
               if (result.success) {
                 res.status(200).json({ status: true, data: result });
               } else {
