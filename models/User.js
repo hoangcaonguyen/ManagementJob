@@ -105,8 +105,7 @@ const schema = new mongoose.Schema(
   { timestamps: true }
 );
 schema.index({
-  first_name: "text",
-  last_name: "text",
+  name_company: "text",
   email: "text",
   fullName: "text",
   address: "text",

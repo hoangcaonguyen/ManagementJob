@@ -8,7 +8,7 @@ const schema = new mongoose.Schema(
     task_owner_id: {
       type: String,
     },
-    task_owner_first_name: {
+    company_email: {
       type: String,
     },
     name_company: {
@@ -21,13 +21,9 @@ const schema = new mongoose.Schema(
       },
     ],
     benefits_enjoyed: [],
-    task_owner_last_name: {
-      type: String,
-    },
+    
     task_description: [],
-    price: {
-      type: Number,
-    },
+    
     type: {
       type: String,
       enum: ["intern", "official", "undefined"],
@@ -49,10 +45,10 @@ const schema = new mongoose.Schema(
           type: String,
           index: true,
         },
-        first_name: {
+        fullname: {
           type: String,
         },
-        last_name: {
+        email: {
           type: String,
         },
         text: {
@@ -66,10 +62,10 @@ const schema = new mongoose.Schema(
           type: String,
           index: true,
         },
-        first_name: {
+        fullName: {
           type: String,
         },
-        last_name: {
+        email: {
           type: String,
         },
       },
@@ -80,10 +76,10 @@ const schema = new mongoose.Schema(
           type: String,
           index: true,
         },
-        first_name: {
+        fullName: {
           type: String,
         },
-        last_name: {
+        email: {
           type: String,
         },
       },
@@ -96,8 +92,8 @@ const schema = new mongoose.Schema(
   { timestamps: true }
 );
 schema.index({
-  task_owner_first_name: "text",
-  task_owner_last_name: "text",
+  task_owner_id: "text",
+  company_email: "text",
   name_job: "text",
   price: "text",
   location: "text",

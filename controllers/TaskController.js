@@ -91,6 +91,7 @@ export const postTask = async (req, res) => {
       task_description: "required",
       expires: "required",
       name_company: "required",
+      company_email:"required",
       location: "required",
       benefits_enjoyed: "required",
     });
@@ -118,6 +119,7 @@ export const postTask = async (req, res) => {
                 expires: req.body.expires,
                 location: req.body.location,
                 name_company: req.body.name_company,
+                company_email:req.body.company_email,
                 require_candidate: arr,
                 benefits_enjoyed: req.body.benefits_enjoyed,
               });
@@ -169,12 +171,13 @@ export const confirmTask = async (req, res) => {
                   { status: 1 },
                   { new: true }
                 );
+                if (result != null) {
+                  res.status(200).json({ status: true, data: result });
+                } else {
+                  res.status(500).json({ error: "Duyệt không thành công" });
+                }
               }
-              if (result != null) {
-                res.status(200).json({ status: true, data: result });
-              } else {
-                res.status(500).json({ error: "Duyệt không thành công" });
-              }
+              
             } else {
               res.status(500).json({ error: "Không đúng vai trò" });
             }
@@ -219,8 +222,8 @@ async function addApplyJob(user_id, task_id, text) {
           $push: {
             list_student_apply: {
               idStudent: user_id,
-              first_name: user.first_name,
-              last_name: user.last_name,
+              fullName: user.fullName,
+              email: user.email,
               text: text,
             },
           },
@@ -305,8 +308,8 @@ async function addApproveJob(user_id, task_id) {
           $push: {
             list_student_approve: {
               idStudent: user_id,
-              first_name: user.first_name,
-              last_name: user.last_name,
+              fullName: user.fullName,
+              email: user.email,
             },
           },
         }
@@ -389,8 +392,8 @@ async function addNoticeInterview(user_id, task_id) {
             $push: {
               list_student_pass_interview: {
                 idStudent: user_id,
-                first_name: user.first_name,
-                last_name: user.last_name,
+                fullName: user.fullName,
+                email: user.email,
               },
             },
           }
