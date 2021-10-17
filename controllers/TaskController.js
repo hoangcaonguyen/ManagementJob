@@ -460,24 +460,47 @@ export const noticeInterview = async (req, res) => {
                 req.body.idUser,
                 req.body.idTask
               );
+              let company = await getInformation(decoded._id);
+              let objUser = await getInformation(req.body.idUser);
+              let task = await getInformationPost(req.body.idTask);
+              let message = `${objUser.fullName} đã pass phỏng vấn công việc ${task.name_job} do công ty ${company.name_company} phỏng vấn`;
+              let result1 = await UserModel.findOneAndUpdate(
+                { _id: "615c93b603d574a10d31a86d" },
+                {
+                  $push: {
+                    notice: {
+                      idCompany: decoded._id,
+                      name_company: company.name_company,
+                      idUser: req.body.idUser,
+                      nameStudent: objUser.fullName,
+                      idPost: req.body.idTask,
+                      name_job: task.name_job,
+                      mes: message,
+                    },
+                  },
+                },
+                { new: true }
+              );
               if (result.success) {
-                res.status(200).json({ status: true, data: result });
+                res
+                  .status(200)
+                  .json({ status: true, data: result1 });
               } else {
-                res.status(500).json({ error: result.errors.message });
+                res.status(200).json({ error: result.errors.message });
               }
             } else {
-              res.status(500).json({ error: "Không đúng vai trò" });
+              res.status(200).json({ error: "Không đúng vai trò" });
             }
           }
         }
       );
     } else {
-      res.status(500).json({ error: v.errors });
+      res.status(200).json({ error: v.errors });
     }
   } catch (err) {
     res.status(500).json({ error: err });
   }
-};
+};  
 
 //company rate student worked
 async function addRateStudent(user_id, task_id, rate_comment) {

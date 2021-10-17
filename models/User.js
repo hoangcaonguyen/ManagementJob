@@ -101,6 +101,17 @@ const schema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    notice: [
+      {
+        idCompany: String,
+        name_company: String,
+        idUser: String,
+        nameStudent: String,
+        idPost: String,
+        name_job: String,
+        mes: String,
+      },
+    ],
   },
   { timestamps: true }
 );

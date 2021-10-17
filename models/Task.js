@@ -68,12 +68,6 @@ const schema = new mongoose.Schema(
           type: String,
           index: true,
         },
-        fullName: {
-          type: String,
-        },
-        email: {
-          type: String,
-        },
       },
     ],
     list_student_pass_interview: [
@@ -81,12 +75,6 @@ const schema = new mongoose.Schema(
         idStudent: {
           type: String,
           index: true,
-        },
-        fullName: {
-          type: String,
-        },
-        email: {
-          type: String,
         },
       },
     ],
@@ -101,7 +89,6 @@ schema.index({
   task_owner_id: "text",
   company_email: "text",
   name_job: "text",
-  price: "text",
   location: "text",
   name_company: "text",
 });
