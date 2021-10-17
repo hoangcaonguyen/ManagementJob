@@ -236,6 +236,7 @@ async function addApplyJob(user_id, task_id, text) {
               idStudent: user_id,
               fullName: user.fullName,
               text: text,
+              email: user.email,
               type_of_student: user.type_of_student,
               experience: user.experience,
             },
@@ -303,7 +304,7 @@ export const applyTask = async (req, res) => {
 };
 
 // kdt approve  task for student
-async function addApproveJob(user_id, task_id, text) {
+async function addApproveJob(user_id, task_id) {
   try {
     let isApplied = await TaskModel.findOne(
       {
@@ -321,13 +322,13 @@ async function addApproveJob(user_id, task_id, text) {
           $push: {
             list_student_approve: {
               idStudent: user_id,
-              fullName: user.fullName,
-              text: text,
-              email: user.email,
-              type_of_student: user.type_of_student,
-              experience: user.experience,
             },
-          },  
+          },
+          $pull: {
+            list_student_apply: {
+              idStudent: user_id,
+            },
+          },
         }
       );
       if (applyTask) {
@@ -361,26 +362,27 @@ export const approveTask = async (req, res) => {
           }
           if (decoded) {
             console.log(decoded);
+            let result = null;
             if (decoded.role == "admin") {
               for (var i = 0; i < req.body.arrIdUser.length; i++) {
                 result = await addApproveJob(
                   req.body.arrIdUser[i],
                   req.body.idTask
                 );
-             } 
+              }
               if (result.success) {
                 res.status(200).json({ status: true, data: result });
               } else {
-                res.status(500).json({ error: result.errors.message });
+                res.status(200).json({ error: result.errors.message });
               }
             } else {
-              res.status(500).json({ error: "Không đúng vai trò" });
+              res.status(200).json({ error: "Không đúng vai trò" });
             }
           }
         }
       );
     } else {
-      res.status(500).json({ error: v.errors });
+      res.status(200).json({ error: v.errors });
     }
   } catch (err) {
     res.status(500).json({ error: err });

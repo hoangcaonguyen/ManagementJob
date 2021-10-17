@@ -45,7 +45,7 @@ const schema = new mongoose.Schema(
           type: String,
           index: true,
         },
-        fullname: {
+        fullName: {
           type: String,
         },
         email: {
@@ -53,6 +53,12 @@ const schema = new mongoose.Schema(
         },
         text: {
           type: String,
+        },
+        type_of_student: {
+          type: Number,
+        },
+        experience: {
+          type: Number,
         },
       },
     ],
