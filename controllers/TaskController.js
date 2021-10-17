@@ -15,6 +15,18 @@ export const getAllTask = async (req, res) => {
     console.log(e);
   }
 };
+export const getOnePost = async (req, res) => {
+  try {
+    let onePost = await TaskModel.findOne({ _id: req.query.id }, {});
+    res.status(200).json({
+      status: true,
+      data: onePost,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 export const getListPostUnactive = async (req, res) => {
   try {
     const listPost = await TaskModel.find({ status: 0 }, {});

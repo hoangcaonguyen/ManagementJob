@@ -13,9 +13,11 @@ import {
   getStudentsApproved,
   getListPostUnactive,
   getListPostActive,
+  getOnePost,
 } from "../controllers/TaskController.js";
 
 router.get("/list-all-post", getAllTask);
+router.get("/get-one-post", getOnePost)
 router.get("/list-post-active", getListPostActive);
 router.get("/list-post-unactive", getListPostUnactive);
 router.post("/post-task", postTask);
