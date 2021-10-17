@@ -236,7 +236,6 @@ async function addApplyJob(user_id, task_id, text) {
               idStudent: user_id,
               fullName: user.fullName,
               text: text,
-              email: user.email,
               type_of_student: user.type_of_student,
               experience: user.experience,
             },
@@ -304,7 +303,7 @@ export const applyTask = async (req, res) => {
 };
 
 // kdt approve  task for student
-async function addApproveJob(user_id, task_id) {
+async function addApproveJob(user_id, task_id, text) {
   try {
     let isApplied = await TaskModel.findOne(
       {
@@ -327,11 +326,6 @@ async function addApproveJob(user_id, task_id) {
               email: user.email,
               type_of_student: user.type_of_student,
               experience: user.experience,
-            },
-          },
-          $pull: {
-            list_student_apply: {
-              idStudent: user_id,
             },
           },  
         }
